@@ -38,3 +38,14 @@
   - Evidence validator accepts valid images/PDFs and computes SHA-256; rejects disallowed types.
   - Integration event outbox row persisted with status `PENDING`.
 - **Result**: PASS (3/3 tests passed)
+
+## Phase 5: RITOS Read API and Contract
+- **Built**: RITOS API-key authentication (`Authorization: Bearer <RITOS_API_KEY>`), full refund context builder per docs/02 §1 (`GET /api/ritos/refund-tickets/:ticketId/context` and alias `GET /api/refunds/:ticketId/context`), evidence download streaming (`GET /api/ritos/evidence/:evidenceId/download`), resource endpoints (`/api/orders/:id/details`, `/api/orders/:id/refund-eligibility`, `/api/customers/:id`, `/api/customers/:id/refund-history`, `/api/products/:id/refund-policy`, `/api/transactions/:transactionId`, `/api/refunds/:ticketId`, `/api/refunds`), and dev helper script `scripts/ritos-client.ts`.
+- **Checks Run**:
+  - Contract & Scenario Vitest: `tests/unit/phase5-acceptance.test.ts`.
+  - Zod validation of Context against strict docs/02 §1 schema: PASS.
+  - Scenario 4: `within_return_window = false`: PASS.
+  - Scenario 7: `related_tickets` includes REFUNDED sibling `RIT-2026-000111` and `remaining_refundable_minor = 0`: PASS.
+  - Scenario 8: `claim_data_conflicts` detects mismatch between `ORDER_NEVER_ARRIVED` and order `DELIVERED`: PASS.
+  - `npx tsc --noEmit` and `npm run lint`: PASS.
+- **Result**: PASS (4/4 tests passed)
