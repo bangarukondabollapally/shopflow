@@ -33,8 +33,7 @@ function LoginForm() {
         return;
       }
 
-      router.push(redirect);
-      router.refresh();
+      window.location.href = redirect;
     } catch {
       setError("An error occurred during sign in.");
     } finally {

@@ -40,3 +40,6 @@ yarn-error.log*
 # Playwright
 /test-results/
 /playwright-report/
+
+# Scratch & Temporary
+/scratch/
