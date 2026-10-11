@@ -11,9 +11,15 @@ export default function AdminReviewQueuePage() {
   const fetchQueue = () => {
     setLoading(true);
     fetch("/api/refunds?status=HUMAN_REVIEW&limit=50")
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = "/login?redirect=/admin/review";
+          return null;
+        }
+        return res.json();
+      })
       .then((data) => {
-        setTickets(data?.tickets || []);
+        if (data?.tickets) setTickets(data.tickets);
         setLoading(false);
       })
       .catch(() => setLoading(false));

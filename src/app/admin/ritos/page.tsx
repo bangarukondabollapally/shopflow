@@ -16,9 +16,17 @@ export default function AdminRitosConsolePage() {
   const fetchData = () => {
     setLoading(true);
     fetch("/api/admin/ritos/exchanges")
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = "/login?redirect=/admin/ritos";
+          return null;
+        }
+        return res.json();
+      })
       .then((d) => {
-        setData(d);
+        if (d && Array.isArray(d.outbox_events)) {
+          setData(d);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -98,10 +106,10 @@ export default function AdminRitosConsolePage() {
 
         {/* Integration Outbox Events */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">Integration Outbox Events ({data.outbox_events.length})</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">Integration Outbox Events ({data?.outbox_events?.length || 0})</h2>
           {loading ? (
             <p className="text-xs text-slate-400">Loading outbox...</p>
-          ) : data.outbox_events.length === 0 ? (
+          ) : (data?.outbox_events?.length || 0) === 0 ? (
             <p className="text-xs text-slate-400">No events logged.</p>
           ) : (
             <div className="overflow-x-auto">
@@ -117,7 +125,7 @@ export default function AdminRitosConsolePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
-                  {data.outbox_events.map((ev) => (
+                  {(data?.outbox_events || []).map((ev) => (
                     <tr key={ev.id} className="hover:bg-slate-50">
                       <td className="py-2.5 px-3">{ev.id}</td>
                       <td className="py-2.5 px-3 font-sans font-semibold text-indigo-700">{ev.event_type}</td>

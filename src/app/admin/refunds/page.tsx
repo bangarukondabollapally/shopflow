@@ -11,12 +11,16 @@ export default function AdminRefundsPage() {
 
   const fetchTickets = () => {
     setLoading(true);
-    fetch("/api/refunds?limit=100", {
-      headers: { Authorization: "Bearer test-ritos-api-key" },
-    })
-      .then((res) => res.json())
+    fetch("/api/refunds?limit=100")
+      .then((res) => {
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = "/login?redirect=/admin/refunds";
+          return null;
+        }
+        return res.json();
+      })
       .then((d) => {
-        setTickets(d.tickets || []);
+        if (d?.tickets) setTickets(d.tickets);
         setLoading(false);
       })
       .catch(() => setLoading(false));
