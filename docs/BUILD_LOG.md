@@ -60,3 +60,14 @@
   - Illegal status transitions (e.g. REFUNDED -> APPROVED) throw IllegalTransitionError / 409: PASS.
   - `npx tsc --noEmit` and `npm run lint`: PASS.
 - **Result**: PASS (4/4 tests passed)
+
+## Phase 7: Human Review and Mock RITOS
+- **Built**: Support analyst review queue `/admin/review` and detail `/admin/review/[id]` with full claim dossier, conflict analysis, and Approve/Reject/Modify adjudication controls; `POST /api/admin/refunds/:ticketId/human-decision`; deterministic rules function `src/server/mock-ritos/mock-decide.ts` per docs/03 §4; outbox processor `src/server/outbox/processor.ts` and manual endpoint `POST /api/admin/outbox/process`; background poller registered in `src/instrumentation.ts`.
+- **Checks Run**:
+  - All 10 scenario outcomes verified: `tests/unit/phase7-acceptance.test.ts`.
+  - Scenarios 1 & 10 reach `APPROVED` (100% confidence >= 0.95): PASS.
+  - Scenario 2 reaches `PARTIALLY_APPROVED` (90%): PASS.
+  - Scenarios 3, 4, 7 reach `REJECTED`: PASS.
+  - Scenarios 5, 6, 8, 9 reach `HUMAN_REVIEW`: PASS.
+  - `npx tsc --noEmit` and `npm run lint`: PASS.
+- **Result**: PASS (1/1 test passed across all 10 scenarios)
