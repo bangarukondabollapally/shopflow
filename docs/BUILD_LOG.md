@@ -71,3 +71,13 @@
   - Scenarios 5, 6, 8, 9 reach `HUMAN_REVIEW`: PASS.
   - `npx tsc --noEmit` and `npm run lint`: PASS.
 - **Result**: PASS (1/1 test passed across all 10 scenarios)
+
+## Phase 8: Admin and Demo Console
+- **Built**: Updated console hub `/admin`, `/admin/refunds` roster with live failure simulation button, `/admin/ritos` integration console with outbox monitor & resend control, `/admin/data` with instant database wipe-and-reseed button, `/admin/api-docs` rendering docs/02 specification, endpoints `POST /api/admin/tickets/:id/simulate-refund-failure`, `POST /api/admin/refunds/:ticketId/resend-to-ritos`, `POST /api/admin/demo/reset-and-seed`, `GET /api/admin/ritos/exchanges`.
+- **Checks Run**:
+  - Vitest: `tests/unit/phase8-acceptance.test.ts`.
+  - State mutation verification for failure simulation flag: PASS.
+  - Outbox event queuing and persistence: PASS.
+  - Full suite Vitest: 8/8 test files passed (21/21 tests passed).
+  - `npx tsc --noEmit` and `npm run lint`: PASS.
+- **Result**: PASS (2/2 tests passed)
