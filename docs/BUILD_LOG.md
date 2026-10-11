@@ -49,3 +49,14 @@
   - Scenario 8: `claim_data_conflicts` detects mismatch between `ORDER_NEVER_ARRIVED` and order `DELIVERED`: PASS.
   - `npx tsc --noEmit` and `npm run lint`: PASS.
 - **Result**: PASS (4/4 tests passed)
+
+## Phase 6: Decision Callback and Refund Execution
+- **Built**: Decision callback `POST /api/ritos/refund-decision` with idempotency, ledger balance protection, and auto-execution trigger; refund execution service `POST /api/payments/refund` with PostgreSQL `FOR UPDATE` row lock, duplicate & over-refund protection, failure simulation flag, and DB settlement (`settle_at`); status poll `GET /api/payments/refund/:id` with lazy settlement; status reporter `POST /api/ritos/refund-tickets/:ticketId/status`; notifications endpoint `POST /api/ritos/notifications`.
+- **Checks Run**:
+  - Automated concurrency & state machine test: `tests/unit/phase6-acceptance.test.ts`.
+  - Two parallel calls with same idempotency key create exactly 1 refund row: PASS.
+  - Same ticket with different key while first is active returns 409 DUPLICATE_REFUND: PASS.
+  - Two concurrent refunds exceeding total balance: exactly one succeeds, one rejected with 422 AMOUNT_EXCEEDS_REFUNDABLE: PASS.
+  - Illegal status transitions (e.g. REFUNDED -> APPROVED) throw IllegalTransitionError / 409: PASS.
+  - `npx tsc --noEmit` and `npm run lint`: PASS.
+- **Result**: PASS (4/4 tests passed)
