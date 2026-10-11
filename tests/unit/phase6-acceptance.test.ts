@@ -115,8 +115,13 @@ describe("Phase 6 Acceptance Verification: Decision Callback & Refund Execution"
     const aarav = await prisma.user.findUnique({ where: { email: "aarav@example.com" } });
     const orderId = `ORD-EXCEED-${Date.now()}`;
     const txnId = `TXN-EXCEED-${Date.now()}`;
-    const ticketA = `RIT-2026-8881${Math.floor(10 + Math.random() * 80)}`;
-    const ticketB = `RIT-2026-8882${Math.floor(10 + Math.random() * 80)}`;
+    const randSuffix = Math.floor(1000 + Math.random() * 9000);
+    const ticketA = `RIT-2026-9${randSuffix}1`;
+    const ticketB = `RIT-2026-9${randSuffix}2`;
+
+    await prisma.refundTransaction.deleteMany({ where: { ticketId: { in: [ticketA, ticketB] } } });
+    await prisma.auditEvent.deleteMany({ where: { entityId: { in: [ticketA, ticketB] } } });
+    await prisma.refundTicket.deleteMany({ where: { id: { in: [ticketA, ticketB] } } });
 
     await prisma.$transaction(async (tx) => {
       await tx.order.create({

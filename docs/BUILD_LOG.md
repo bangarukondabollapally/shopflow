@@ -81,3 +81,21 @@
   - Full suite Vitest: 8/8 test files passed (21/21 tests passed).
   - `npx tsc --noEmit` and `npm run lint`: PASS.
 - **Result**: PASS (2/2 tests passed)
+
+## Phase 9: Hardening, E2E Tests, and Documentation
+- **Built**:
+  - Rate limiting middleware `src/middleware.ts` with IP sliding limiter.
+  - Security headers configured in `next.config.js` (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS).
+  - Explicit Zod whitelist output schema `src/server/schemas/customer.ts` for customer endpoints.
+  - Customer UI pages: `/orders/[id]/refund` and `/refunds/[id]` with real-time timeline tracking.
+  - Customer sanitization unit tests and AST/regex scanner `tests/unit/customer-sanitization.test.ts`.
+  - Playwright End-to-End demo flows `tests/e2e/demo-flows.spec.ts` (Happy Path & Exception Path per docs/04 §6).
+  - Copy-pasteable curl documentation `docs/SAMPLE_REQUESTS.md` for all RITOS endpoints in docs/02.
+  - Comprehensive `README.md` detailing architecture, system boundaries, setup, environment variables, demo accounts, scenario matrix, and instructions for connecting real RITOS.
+- **Checks Run**:
+  - `npx tsc --noEmit`: PASS (0 errors)
+  - `npm run lint`: PASS (0 errors)
+  - `npm run test` (Vitest): PASS (9 files, 23 passed tests)
+  - `npm run test:e2e` (Playwright): PASS (2 passed tests in 14.9s: Happy Path in 5.0s, Exception Path in 5.0s)
+- **Result**: PASS
+

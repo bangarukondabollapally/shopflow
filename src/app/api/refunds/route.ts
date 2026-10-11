@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/db";
-import { requireRitosAuth, errorResponse } from "@/server/auth/ritos-guard";
+import { authenticateRitosOrSession, errorResponse } from "@/server/auth/ritos-guard";
 import { TicketStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const { error } = requireRitosAuth(req);
-  if (error) return error;
+  const auth = await authenticateRitosOrSession(req, ["ADMIN", "SUPPORT_ANALYST"]);
+  if (auth.error) return auth.error;
 
   try {
     const { searchParams } = new URL(req.url);

@@ -28,7 +28,25 @@ export async function buildRefundContext(ticketId: string) {
 
   const { customer, order, product } = ticket;
   const payment = order.payment;
-  const policySnapshot = ticket.policySnapshot as any;
+  const rawSnapshot = ticket.policySnapshot as any;
+  const policySnapshot = rawSnapshot || (product.policy ? {
+    policy_version: product.policy.version,
+    policy_type: product.policy.policyType,
+    refund_percentage: product.policy.refundPercentage,
+    return_window_days: product.policy.returnWindowDays,
+    opened_allowed: product.policy.openedAllowed,
+    requires_unused: product.policy.requiresUnused,
+    defective_only: product.policy.defectiveOnly,
+    exchange_only: product.policy.exchangeOnly,
+    replacement_allowed: product.policy.replacementAllowed,
+    return_required: product.policy.returnRequired,
+    return_shipping: product.policy.returnShipping,
+    verification_required: product.policy.verificationRequired,
+    evidence_required_reasons: product.policy.evidenceRequiredReasons,
+    human_approval_threshold_minor: product.policy.humanApprovalThresholdMinor,
+    exceptions: product.policy.exceptions || {},
+    snapshot_taken_at: ticket.createdAt.toISOString(),
+  } : {});
 
   // 1. Customer statistics
   const now = new Date();

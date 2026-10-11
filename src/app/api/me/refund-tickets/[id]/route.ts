@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/db";
 import { requireAuth, errorResponse } from "@/server/auth/guards";
+import { CustomerTicketResponseSchema } from "@/server/schemas/customer";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,34 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     if (user.role === "CUSTOMER" && ticket.customerId !== user.id) {
       return errorResponse("FORBIDDEN", "You do not own this ticket", 403);
+    }
+
+    // Lazy settlement check: if any refund transaction is PENDING and settleAt <= now, settle it
+    if (ticket.status !== "REFUNDED") {
+      const pendingTx = ticket.refundTransactions.find(
+        (rt) => rt.status === "PENDING" && rt.settleAt && rt.settleAt.getTime() <= Date.now()
+      );
+      if (pendingTx) {
+        const { transitionTicket } = await import("@/server/state-machine/ticket-state-machine");
+        const { RefundTxStatus, TicketStatus } = await import("@prisma/client");
+        try {
+          await prisma.$transaction(async (tx) => {
+            await tx.refundTransaction.update({
+              where: { id: pendingTx.id },
+              data: { status: RefundTxStatus.SUCCESS },
+            });
+            await transitionTicket(
+              tx,
+              ticket.id,
+              TicketStatus.REFUNDED,
+              "SETTLEMENT_POLLER",
+              "REFUND_COMPLETED",
+              { refund_id: pendingTx.id, amount_minor: pendingTx.amountMinor }
+            );
+          });
+          ticket.status = TicketStatus.REFUNDED;
+        } catch {}
+      }
     }
 
     // Load audit events for customer timeline
@@ -80,7 +109,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       };
     });
 
-    return NextResponse.json({
+    const payload = CustomerTicketResponseSchema.parse({
       ticket: {
         id: ticket.id,
         ticket_number: ticket.id,
@@ -97,6 +126,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         timeline,
       },
     });
+
+    return NextResponse.json(payload);
   } catch (err: any) {
     return errorResponse("SERVER_ERROR", err.message || "Failed to load ticket", 500);
   }

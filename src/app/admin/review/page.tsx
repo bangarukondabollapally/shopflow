@@ -10,9 +10,7 @@ export default function AdminReviewQueuePage() {
 
   const fetchQueue = () => {
     setLoading(true);
-    fetch("/api/refunds?status=HUMAN_REVIEW&limit=50", {
-      headers: { Authorization: "Bearer test-ritos-api-key" },
-    })
+    fetch("/api/refunds?status=HUMAN_REVIEW&limit=50")
       .then((res) => res.json())
       .then((data) => {
         setTickets(data?.tickets || []);

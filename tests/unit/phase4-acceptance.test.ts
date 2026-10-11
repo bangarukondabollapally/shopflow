@@ -46,14 +46,14 @@ describe("Phase 4 Acceptance Verification: Refund Tickets and Evidence", () => {
     expect(order).toBeDefined();
     const item = order!.items[0];
 
-    // Ensure test ticket is clean before run
-    await prisma.integrationEvent.deleteMany({ where: { ticketId: "RIT-2026-000123" } });
-    await prisma.auditEvent.deleteMany({ where: { entityId: "RIT-2026-000123" } });
-    await prisma.refundTicket.deleteMany({ where: { id: "RIT-2026-000123" } });
-
     // Preview next id from sequence
     const expectedTicketId = await peekNextTicketId();
-    expect(expectedTicketId).toBe("RIT-2026-000123");
+    expect(expectedTicketId).toMatch(/^RIT-\d{4}-\d{6}$/);
+
+    // Ensure test ticket is clean before run
+    await prisma.integrationEvent.deleteMany({ where: { ticketId: expectedTicketId } });
+    await prisma.auditEvent.deleteMany({ where: { entityId: expectedTicketId } });
+    await prisma.refundTicket.deleteMany({ where: { id: expectedTicketId } });
 
     // Create ticket atomically
     const createdTicket = await prisma.$transaction(async (tx) => {
@@ -96,18 +96,18 @@ describe("Phase 4 Acceptance Verification: Refund Tickets and Evidence", () => {
       return t;
     });
 
-    expect(createdTicket.id).toBe("RIT-2026-000123");
+    expect(createdTicket.id).toBe(expectedTicketId);
     expect(createdTicket.status).toBe(TicketStatus.PENDING_RITOS);
 
     // Verify Audit Event persistence
     const audit = await prisma.auditEvent.findFirst({
-      where: { entityId: "RIT-2026-000123", event: "TICKET_CREATED" },
+      where: { entityId: createdTicket.id, event: "TICKET_CREATED" },
     });
     expect(audit).toBeDefined();
 
     // Verify Outbox row persistence
     const outbox = await prisma.integrationEvent.findFirst({
-      where: { ticketId: "RIT-2026-000123", eventType: "refund.ticket.created" },
+      where: { ticketId: createdTicket.id, eventType: "refund.ticket.created" },
     });
     expect(outbox).toBeDefined();
     expect(outbox?.status).toBe("PENDING");

@@ -13,9 +13,7 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/ritos/refund-tickets/${params.id}/context`, {
-      headers: { Authorization: "Bearer test-ritos-api-key" },
-    })
+    fetch(`/api/ritos/refund-tickets/${params.id}/context`)
       .then((res) => res.json())
       .then((data) => {
         setContext(data);
@@ -66,8 +64,12 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
     }).format(minor / 100);
   };
 
-  if (loading || !context) {
-    return <div className="p-8 text-center text-slate-500">Loading ticket dossier...</div>;
+  if (loading || !context || !context.ticket) {
+    return (
+      <div className="p-8 text-center text-slate-500">
+        {loading ? "Loading ticket dossier..." : "Failed to load ticket dossier or ticket not found."}
+      </div>
+    );
   }
 
   const { ticket, customer, order, product, refund_policy, evidence, refund_ledger, derived_facts } = context;
